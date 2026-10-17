@@ -1,5 +1,6 @@
 """Seq toolbox: utilities for fastq, fasta and BLAST output files."""
 
+from helpers.bio_files import make_oneline_fasta_name, read_fasta
 from helpers.fastq import (
     make_output_path,
     normalize_bounds,
@@ -46,3 +47,25 @@ def filter_fastq(
                 and passes_quality(quality, quality_threshold)
             ):
                 write_record(output_file, record)
+
+
+def convert_multiline_fasta_to_oneline(
+    input_fasta: str, output_fasta: str | None = None
+) -> None:
+    """
+    Converts a fasta file with multiline sequences to a fasta file
+    where every sequence takes exactly one line.
+
+    Arguments:
+    input_fasta: path to the input fasta file
+    output_fasta: path to the output file; if not given,
+        "<input name>_oneline.fasta" is created next to the input file
+
+    Returns None, the result is written to a file.
+    """
+    if output_fasta is None:
+        output_fasta = make_oneline_fasta_name(input_fasta)
+
+    with open(output_fasta, "w") as output_file:
+        for header, sequence in read_fasta(input_fasta):
+            output_file.write(header + "\n" + sequence + "\n")
