@@ -1,6 +1,11 @@
 """Seq toolbox: utilities for fastq, fasta and BLAST output files."""
 
-from helpers.bio_files import make_oneline_fasta_name, read_fasta
+from helpers.bio_files import (
+    make_oneline_fasta_name,
+    read_best_blast_hits,
+    read_fasta,
+    write_lines,
+)
 from helpers.fastq import (
     make_output_path,
     normalize_bounds,
@@ -69,3 +74,19 @@ def convert_multiline_fasta_to_oneline(
     with open(output_fasta, "w") as output_file:
         for header, sequence in read_fasta(input_fasta):
             output_file.write(header + "\n" + sequence + "\n")
+
+
+def parse_blast_output(input_file: str, output_file: str) -> None:
+    """
+    Extracts the best hit description for every query from a BLAST text output.
+
+    Arguments:
+    input_file: path to the BLAST results txt file
+    output_file: path to the output file
+
+    Unique descriptions are sorted alphabetically (case-insensitive)
+    and written one per line.
+    Returns None, the result is written to a file.
+    """
+    best_hits = sorted(set(read_best_blast_hits(input_file)), key=str.lower)
+    write_lines(output_file, best_hits)

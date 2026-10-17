@@ -43,3 +43,37 @@ def read_fasta(input_fasta: str) -> Iterator[tuple[str, str]]:
                 sequence_parts.append(line)
     if header is not None:
         yield header, "".join(sequence_parts)
+
+
+def read_best_blast_hits(input_file: str) -> Iterator[str]:
+    """
+    Reads a BLAST text output and finds the best hit for every query.
+
+    Arguments:
+    input_file: path to the BLAST results txt file
+
+    Yields the Description of the first hit in each
+    "Sequences producing significant alignments" table.
+    """
+    description_width = None
+    with open(input_file) as blast_file:
+        for line in blast_file:
+            if line.startswith("Description"):
+                # the Description column ends where the next column ("Name") starts
+                description_width = line.index("Name")
+            elif description_width is not None:
+                yield line[:description_width].strip()
+                description_width = None
+
+
+def write_lines(output_file: str, lines: list[str]) -> None:
+    """
+    Writes strings to a file, one per line.
+
+    Arguments:
+    output_file: path to the output file
+    lines: strings to write
+    """
+    with open(output_file, "w") as file:
+        for line in lines:
+            file.write(line + "\n")
